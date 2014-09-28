@@ -1,0 +1,37 @@
+export ESC=""
+export RESET="$ESC[0m"
+
+export BLACK="$ESC[30m"
+export RED="$ESC[31m"
+export GREEN="$ESC[32m"
+export YELLOW="$ESC[33m"
+export BLUE="$ESC[34m"
+export MAGENTA="$ESC[35m"
+export CYAN="$ESC[36m"
+export WHITE="$ESC[37m"
+
+export ON_BLACK="$ESC[40m"
+export ON_RED="$ESC[41m"
+export ON_GREEN="$ESC[42m"
+export ON_YELLOW="$ESC[43m"
+export ON_BLUE="$ESC[44m"
+export ON_MAGENTA="$ESC[45m"
+export ON_CYAN="$ESC[46m"
+export ON_WHITE="$ESC[47m"
+
+export ULINE="$ESC[4m"
+export ULINE_OFF="$ESC[24m"
+
+### Functions for 256 term color support
+### foreground
+function rgb {
+    echo -ne "$ESC[38;5;${1}m"
+}; export -f rgb
+
+### background
+function on_rgb {
+    echo -ne "$ESC[48;5;${1}m"
+}; export -f rgb
+
+###############################################################################
+### vim: ft=sh :
