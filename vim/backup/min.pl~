@@ -1,0 +1,18 @@
+#!/usr/bin/env perl
+
+use Acme::Minify qw(minify);
+
+# open(my $FH, "<term256color.pl");
+#
+# while (<$FH>) {
+#     $code .= $_;
+# }
+#
+# close($FH);
+
+$code = `cat $ARGV[0]`;
+
+print $code;
+# $min = minify( $code );
+
+# print $min;

@@ -1,0 +1,43 @@
+package MyContainer;
+
+use Moo;
+extends 'Container';
+use WSB::Config;
+use Graph;
+
+my $config = WSB::Config->instance;
+
+around add => sub {
+    my $orig = shift;
+    my $self = shift;
+    my $object = shift;
+
+    if ( $self->_elements->has_any( sub { $_->name eq $object->name } ) ) {
+        warn "already exists\n";
+    } else {
+        $orig->($self, $object);
+    }
+};
+
+sub get_software_by_name {
+    my $self = shift;
+
+    if ( @_ == 1 ) {
+        my $name = shift;
+        return $self->_elements->first_where( sub { $_->name eq $name } );
+    } else {
+        return undef;
+    }
+}
+
+sub dependency_sort {
+    my $self = shift;
+    my $index = 0;
+    my %order = map { $_ => $index++ } @{$config->categories};
+
+    for my $cat ( values $config->categories ) {
+        my $graph = Graph->new();
+    }
+}
+
+1;

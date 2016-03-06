@@ -1,0 +1,26 @@
+package Role::State;
+
+use WSB::Types qw( Datetime );
+use Moo::Role;
+use namespace::clean;
+
+has 'enabled' => (
+    is      => 'rw',
+    isa     => Bool,
+    default => sub { 1 },
+);
+
+has 'installed' => (
+    is      => 'rw',
+    isa     => Bool,
+    default => sub { 0 },
+);
+
+has 'installed_on' => (
+    is          => 'rw',
+    isa         => Datetime,
+    coerce      => 1,
+    lazy_build  => 1,
+);
+
+1;

@@ -1,0 +1,6 @@
+package WSB::Storage::Software::Archive;
+
+use Moo;
+with 'Storage';
+
+1;

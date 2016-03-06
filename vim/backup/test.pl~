@@ -1,0 +1,62 @@
+#!/usr/bin/env perl
+#
+use strict;
+use warnings;
+
+use WSB::Storage::Software::File;
+use WSB::Software::Repository;
+use Data::Dumper;
+
+{
+    package Mock;
+
+    use Moo;
+    with 'WSB::Repository';
+
+}
+
+my $gateway = WSB::Storage::Software::File->new();
+# my $repo = WSB::Software::Repository->new( $gateway );
+my $repo = WSB::Software::Repository->new( gateway => $gateway );
+
+my $s = $repo->find( 'pcre' );
+
+print $s->name;
+my $result = $repo->findAll();
+print Dumper($result), "\n";
+# my $mock = Mock->new( gateway => $gateway, factory => $factory );
+# my $mock = Mock->new( gateway => $gateway );
+# my $mock = Mock->new( );
+# my $mock = Mock->new( $gateway, factory => $factory );
+# my $mock = Mock->new( $gateway, $factory );
+
+
+# use WSB::Storage::Software::File;
+# use WSB::Software::Repository;
+# use Data::Dumper;
+#
+# my $softwareGateway = WSB::Storage::Software::File->new();
+# # my $softwareRepository = Software::Repository->new( gateway => $softwareGateway );
+# my $softwareRepository = WSB::Software::Repository->new( $softwareGateway );
+#
+# my $result = $softwareRepository->find('pcre');
+# print Dumper($result), "\n";
+#
+# $result = $softwareRepository->findAll();
+# print Dumper($result), "\n";
+# my $result = $softwareGateway->load( 'pcre2' );
+#    $result = $softwareGateway->save( 'pcre2' );
+# use SoftwareFileRepo;
+# use WSB;
+#
+# my $wsb = WSB->instance();
+# print $wsb->version;
+# print $wsb->home;
+# $wsb->dbh->do("create table test ( id INTEGER PRIMARY KEY, name VARCHAR(100) )");
+# use Repository::File::Software;
+#
+# my $repo = Repository::File::Software->new();
+#
+# my $software = $repo->find('pcre');
+#
+# print $software->name();

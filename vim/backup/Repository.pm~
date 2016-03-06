@@ -1,0 +1,69 @@
+package WSB::Repository;
+
+use Moo::Role;
+use Kavorka;
+use WSB::TypeLibrary qw( DataStorage Factory );
+
+has 'gateway' => (
+    is       => 'ro',
+    isa      => DataStorage,
+    required => 1,
+);
+
+has 'factory' => (
+    is       => 'ro',
+    isa      => Factory,
+    required => 1,
+);
+
+method find(Str $key) {
+    my $object;
+
+    if ( my $result = $self->gateway->load( $key ) ) {
+        $object = $self->factory->make( $result );
+    } else {
+        $object = undef;
+    }
+
+    return $object;
+}
+
+method findAll {
+    my $object;
+    my @objects;
+
+    if ( my @result = $self->gateway->loadAll() ) {
+        foreach ( @result ) {
+            $object = $self->factory->make( $_ );
+
+            if ( defined $object ) {
+                push ( @objects, $object );
+            }
+        }
+    }
+
+    return @objects;
+}
+
+# sub BUILDARGS {
+#     my ( $class, @args ) = @_;
+#
+#     unshift @args, "gateway" if @args % 2 == 1;
+#
+#     return { @args };
+# }
+
+# sub BUILDARGS {
+#     my ( $class, @argv ) = @_;
+#     my $argc = scalar @argv;
+#
+#     return {} unless $argc > 0;
+#
+#     if ( @argv == 2 and ref $argv[0] && ref $argv[1] ) {
+#         return { gateway => $argv[0], factory => $argv[1] };
+#     } else {
+#         return { @argv };
+#     }
+# }
+
+1;

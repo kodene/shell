@@ -1,0 +1,31 @@
+name        openssl
+description OpenSSL
+version     1.0.1g
+version     1.0.1j
+archive     openssl-${version}.tar.gz
+url         http://www.openssl.org/source/${archive}
+<build>
+</build>
+<software openssl>
+    description = OpenSSL
+    version = 1.0.1j
+    archive = openssl-${version}.tar.gz
+    srcdir = openssl-${version}
+    url = http://www.openssl.org/source/${archive}
+    <build>
+        configure = ./config shared zlib
+        make = make
+        test = make test
+        install = make install_sw
+        clean = make clean
+    </build>
+    <plugin test>
+        description = Some test plugin
+        configure = --with-test
+        <dependency first/>
+        <dependency second/>
+    </plugin>
+    <dependency blah/>
+    <rpm zlib/>
+    <rpm zlib-devel/>
+</software>

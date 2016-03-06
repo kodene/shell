@@ -1,0 +1,38 @@
+{
+    "vars": {
+        "openshift": [
+            {
+                "name": "APP_ALIAS",
+                "description": "Application alias",
+                "example": "myapp.domain",
+                "password": "false"
+            },
+            {
+                "name": "APP_ALIAS_PASSPHRASE",
+                "description": "Passphrase for [APP_ALIAS] key",
+                "example": "",
+                "password": "true"
+            }
+        ]
+    },
+    "constants": {
+        "default": [
+            {
+                "name": "JVM_HEAP_SIZE",
+                "value": "8g"
+            }
+        ],
+        "AOC": [
+            {
+                "name": "JVM_HEAP_SIZE",
+                "value": "30g"
+            }
+        ],
+        "LITE": [
+            {
+                "name": "JVM_HEAP_SIZE",
+                "value": "4g"
+            }
+        ]
+    }
+}

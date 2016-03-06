@@ -1,0 +1,110 @@
+package Software;
+
+use WSB;
+use Moose;
+use namespace::autoclean;
+with 'MooseX::SimpleConfig';
+use MooseX::Privacy;
+
+use File::Fetch;
+use Archive::Extract;
+use URI;
+
+$File::Fetch::BLACKLIST = [qw(lwp httplite netftp httptiny)];
+$File::Fetch::WARN      = 0;
+
+has 'full_name' => (
+    is => 'ro',
+    isa => 'Strr',
+    required => 1
+);
+
+has 'version' => (
+    is => 'ro',
+    isa => 'Str',
+    required => 1
+);
+
+has 'uri' => (
+    is => 'ro',
+    isa => 'Str',
+    required => 1
+);
+
+has 'archive' => (
+    traits => ['Private'],
+    is => 'rw',
+    isa => 'Str',
+);
+
+has 'install_path' => (
+    is => 'ro',
+    isa => 'Str',
+    required => 0
+);
+
+has 'dependencies' => (
+    is      => 'ro',
+    isa     => 'ArrayRef[Str]',
+    default => sub { [''] },
+);
+
+has 'build' => (
+    traits  => ['Hash'],
+    is      => 'ro',
+    isa     => 'HashRef[ArrayRef[Str]]',
+    predicate => 'has_build',
+    required => 0,
+    handles => {
+        build_exists => 'exists',
+        build_ids => 'keys',
+        get_build => 'get',
+    },
+);
+
+has 'features' => (
+    traits  => ['Hash'],
+    is      => 'ro',
+    isa     => 'HashRef[HashRef[Str]]',
+    predicate => 'has_features',
+    required => 0,
+    handles => {
+        feature_ids => 'keys',
+        get_feature => 'get',
+    },
+);
+
+sub download {
+    my $self = shift;
+    my $wsb = WSB->new;
+    my $file = File::Fetch->new( uri => $self->uri() );
+
+    $self->archive($file->output_file());
+
+    print $wsb->downloads()."/".$self->archive(), "\n";
+    if ( -f $wsb->downloads()."/".$self->archive() ) {
+        print "Archive already exists.\n";
+    } else {
+        eval {
+            $file->fetch( to => $wsb->downloads() )
+        };
+    }
+
+    return $self->archive;
+}
+
+sub compile {
+}
+
+sub clean {
+}
+
+sub install {
+}
+
+sub uninstall {
+}
+
+__PACKAGE__->meta->make_immutable;
+
+1;

@@ -1,0 +1,84 @@
+package WSB::TypeLibrary;
+
+use Type::Library -base, -declare => qw( Software );
+use Type::Utils -all;
+
+BEGIN { extends "Types::Standard", "List::Objects::Types" };
+
+use DateTime;
+use URI;
+use Path::Tiny;
+
+### Type Datetime {{{
+class_type "Datetime", { class => "DateTime" };
+coerce "Datetime",
+    from Int,   via { DateTime->from_epoch( epoch => $_ ) },
+    from Undef, via { DateTime->now() };
+### }}}
+
+### Type Uri {{{
+class_type "Uri", { class => "URI" };
+coerce "Uri",
+    from Str, via { URI->new( $_ ) };
+### }}}
+
+### Type Path {{{
+class_type "Path", { class => "Path::Tiny" };
+coerce "Path",
+    from Str, via { Path::Tiny::path( $_ ) };
+### }}}
+
+### Type File {{{
+declare "File", as "Path", where { $_->is_file },
+    message { "File '$_' does not exist" },
+    coercion => 1;
+### }}}
+
+### Type Dir {{{
+declare "Dir", as "Path", where { $_->is_dir },
+    message { "Directory '$_' does not exist" },
+    coercion => 1;
+### }}}
+
+### Type AbsPath {{{
+declare "AbsPath", as "Path", where { $_->is_absolute },
+    message { "Path '$_' is not absolute" },
+    coercion => 1;
+### }}}
+
+### Type AbsFile {{{
+declare "AbsFile", as "File", where { $_->is_absolute },
+    message { "File '$_' is not absolute" },
+    coercion => 1;
+### }}}
+
+### Type AbsDir {{{
+declare "AbsDir", as "Dir", where { $_->is_absolute },
+    message { "Directory '$_' is not absolute" },
+    coercion => 1;
+### }}}
+
+### Type DatabaseHandle {{{
+declare "DatabaseHandle", where { $_->isa("DBI::db") },
+    message { "Not a DBI Database object" };
+### }}}
+
+### Type Software {{{
+class_type "Software", { class => "WSB::Software" };
+coerce "Software",
+    from HashRef, via { WSB::Software->new( $_ ) };
+### }}}
+
+### Type SoftwareRepository {{{
+declare "SoftwareRepository", where { $_->DOES("WSB::Software::Repository") },
+    message { "Object does not implement WSB::Software::Repository" };
+### }}}
+
+### Type SoftwareGateway {{{
+declare "DataStorage", where { $_->DOES("WSB::Storage") },
+    message { "Object does not extend WSB::Storage" };
+### }}}
+
+
+1;
+### vim: fdm=marker

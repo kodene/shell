@@ -1,0 +1,143 @@
+" Vundle support
+filetype off
+
+set rtp+=~/.vim/bundle/Vundle.vim
+call vundle#begin()
+
+" Vundle required
+Plugin 'VundleVim/Vundle.vim'
+" Libraries used by other plugins
+Plugin 'MarcWeber/vim-addon-mw-utils'
+Plugin 'tomtom/tlib_vim'
+
+if executable('ack')
+    Plugin 'mileszs/ack.vim'
+endif
+
+" Color Schemes
+Plugin 'nanotech/jellybeans.vim'
+" Edit support
+Plugin 'Lokaltog/vim-easymotion'
+Plugin 'tpope/vim-surround'
+" Plugin 'garbas/vim-snipmate'
+" Plugin 'honza/vim-snippets'
+Plugin 'tomtom/tcomment_vim'
+Plugin 'kien/ctrlp.vim'
+" Session/View support
+Plugin 'xolox/vim-misc'
+Plugin 'xolox/vim-session'
+" UI Support
+Plugin 'itchyny/lightline.vim'
+"Plugin 'bling/vim-airline'
+Plugin 'edkolev/tmuxline.vim'
+" General Programming Support
+Plugin 'tpope/vim-fugitive'
+Plugin 'Raimondi/delimitMate'
+Plugin 'scrooloose/syntastic'
+" PHP support
+Plugin 'StanAngeloff/php.vim'
+" Perl support
+Plugin 'vim-perl/vim-perl'
+" Python support
+Plugin 'davidhalter/jedi-vim'
+" Puppet Support
+Plugin 'rodjek/vim-puppet'
+
+call vundle#end()
+filetype plugin indent on
+
+" Plugin settings {{{
+    " tomtom/tcomment_vim
+    nmap ,c <C-_><C-_>
+    " xolox/vim-session
+    let g:session_autoload='no'
+    let g:session_autosave='yes'
+    let g:session_verbose_messages=0
+    let g:session_default_to_last=0
+    " kien/ctrlp.vim
+    nnoremap <leader>. :CtrlPTag<CR>
+    " majutsushi/tagbar
+    nnoremap <F9> :TagbarToggle<CR>
+    let g:tagbar_autoclose = 1
+    let g:tagbar_type_perl = {
+        \ 'ctagstype' : 'Perl',
+        \ 'kinds' : [
+        \ 'p:packages:1:0',
+        \ 'u:uses:1:0',
+        \ 'r:requires:1:0',
+        \ 'e:extends',
+        \ 'w:roles',
+        \ 'o:ours:1:0',
+        \ 'c:constants:1:0',
+        \ 'f:formats:1:0',
+        \ 'a:attributes',
+        \ 's:subroutines',
+        \ 'm:methods',
+        \ 'x:around:1:,,0',
+        \ 'l:aliases',
+        \ 'd:pod:1:0',
+        \ ],
+        \ }
+
+    let delimitMate_expand_cr = 1
+    " davidhalter/jedi-vm
+    let g:jedi#use_tabs_not_buffers = 1
+    let g:jedi#use_splits_not_buffers = "right"
+" }}}
+
+" Lightline Configuration {{{
+    let g:lightline = {
+        \ 'active': {
+        \   'left': [ [ 'mode', 'paste' ], [ 'fugitive', 'readonly', 'filename', 'modified' ] ],
+        \   'right': [ [ 'lineinfo' ], [ 'percent' ], [ 'fileformat', 'fileencoding', 'filetype' ] ]
+        \ },
+        \ 'component': {
+        \   'lineinfo': ' %3l:%-2v'
+        \ },
+        \ 'component_function': {
+        \   'modified': 'MyModified',
+        \   'readonly': 'MyReadonly',
+        \   'fugitive': 'MyFugitive',
+        \   'fileformat': 'MyFileformat',
+        \   'filetype': 'MyFiletype',
+        \   'fileencoding': 'MyFileencoding',
+        \   'mode': 'MyMode',
+        \ },
+        \ 'separator': { 'left': '', 'right': '' },
+        \ 'subseparator': { 'left': '', 'right': '' },
+        \ }
+
+    function! MyModified()
+        return &ft =~ 'help' ? '' : &modified ? '+' : &modifiable ? '' : '-'
+    endfunction
+
+    function! MyReadonly()
+        return &ft !~? 'help' && &readonly ? '' : ''
+    endfunction
+
+    function! MyFugitive()
+        if exists("*fugitive#head")
+            let _ = fugitive#head()
+            return strlen(_) ? ' '._ : ''
+        endif
+        return ''
+    endfunction
+
+    function! MyFileformat()
+        return winwidth(0) > 70 ? &fileformat : ''
+    endfunction
+
+    function! MyFiletype()
+        return winwidth(0) > 70 ? (strlen(&filetype) ? &filetype : 'no ft') : ''
+    endfunction
+
+    function! MyFileencoding()
+        return winwidth(0) > 70 ? (strlen(&fenc) ? &fenc : &enc) : ''
+    endfunction
+
+    function! MyMode()
+        return winwidth(0) > 60 ? lightline#mode() : ''
+    endfunction
+" }}}
+
+" vim: fdm=marker

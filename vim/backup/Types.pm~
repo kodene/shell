@@ -1,0 +1,74 @@
+package WSB::Types;
+
+use Type::Library -base, -declare => qw( Software );
+use Type::Utils -all;
+
+BEGIN { extends "Types::Standard", "List::Objects::Types" };
+
+use DateTime;
+use URI;
+use Path::Tiny;
+
+### Type Datetime {{{
+class_type "Datetime", { class => "DateTime" };
+coerce "Datetime",
+    from Int,   via { DateTime->from_epoch( epoch => $_ ) },
+    from Undef, via { DateTime->now() };
+### }}}
+
+### Type Uri {{{
+class_type "Uri", { class => "URI" };
+coerce "Uri",
+    from Str, via { URI->new( $_ ) };
+### }}}
+
+### Type Path {{{
+class_type "Path", { class => "Path::Tiny" };
+coerce "Path",
+    from Str, via { Path::Tiny::path( $_ ) };
+### }}}
+
+### Type File {{{
+declare "File", as "Path", where { $_->is_file },
+    message { "File '$_' does not exist" },
+    coercion => 1;
+### }}}
+
+### Type Dir {{{
+declare "Dir", as "Path", where { $_->is_dir },
+    message { "Directory '$_' does not exist" },
+    coercion => 1;
+### }}}
+
+### Type AbsPath {{{
+declare "AbsPath", as "Path", where { $_->is_absolute },
+    message { "Path '$_' is not absolute" },
+    coercion => 1;
+### }}}
+
+### Type AbsFile {{{
+declare "AbsFile", as "File", where { $_->is_absolute },
+    message { "File '$_' is not absolute" },
+    coercion => 1;
+### }}}
+
+### Type AbsDir {{{
+declare "AbsDir", as "Dir", where { $_->is_absolute },
+    message { "Directory '$_' is not absolute" },
+    coercion => 1;
+### }}}
+
+class_type "Software", { class => "Entity::Software" };
+coerce "Software",
+    from HashRef, via { Entity::Software->new( $_ ) };
+
+### Type SoftwareRepository {{{
+declare "SoftwareRepository", where { $_->DOES("Entity::SoftwareRepository") },
+    message { "Object does not implement Entity::SoftwareRepository" };
+### }}}
+
+class_type "SoftwareContainer", { class => 'Entity::SoftwareContainer' };
+coerce "SoftwareContainer",
+    from ArrayRef[Software], via { Entity::SoftwareContainer->new( $_ ) };
+1;
+### vim: fdm=marker

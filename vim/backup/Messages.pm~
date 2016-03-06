@@ -1,0 +1,75 @@
+package WSB::Messages;
+use strict;
+use warnings;
+
+use parent qw(Class::StrongSingleton);
+use Params::Validate qw(:all);
+use WSB::Color;
+
+my $color = new WSB::Color();
+
+sub new {
+	my $class = shift;
+	my $self  = {};
+	
+	bless($self, $class);
+	
+	$self->_init_StrongSingleton();
+	return $self;
+}
+
+sub header {
+	my $self = shift;
+	my %p    = validate(@_, { 
+		msg  => 1, 
+		type => { regex => qr/info|warn|error/o } });
+	my $cols = $self->_get_cols;
+	my $msg  = sprintf "%-${cols}s", $p{msg};
+	
+	if ($p{type} eq 'info') {
+		$msg = $color->header_info($msg);
+	} elsif ($p{type} eq 'warn') {
+		$msg = $color->header_warn($msg);
+	} elsif ($p{type} eq 'error') {
+		$msg = $color->header_error($msg);
+	}
+	
+	print STDERR $msg;
+}
+
+sub action {
+	my $self = shift;
+	my @p    = validate_pos(@_, 1);
+	my $cols = $self->_get_cols - 5;
+	my $msg  = $p[0];
+	
+	if (length($msg) > $cols) {
+		$msg = substr($p[0], 0, $cols-4)."...";
+	}
+	
+	$| = 1;
+	printf STDERR "%-${cols}s", $msg;
+	$| = 0;
+}
+
+sub action_result {
+	my $self = shift;
+	my @p    = validate_pos(@_, { type => BOOLEAN });
+	my $msg  = shift;
+	
+	if ($p[0]) {
+		$msg = '['.$color->error('NO').']';
+	} else {
+		$msg = '['.$color->success('OK').']';
+	}
+	
+	print STDERR $msg, "\n";
+}
+
+sub _get_cols {
+	my $cols = `tput cols`;
+	
+	chomp($cols);
+	
+	return $cols;
+}

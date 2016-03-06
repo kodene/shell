@@ -1,0 +1,7 @@
+package Dao::Software::Interface;
+
+use Moo::Role;
+
+requires 'get';
+
+1;

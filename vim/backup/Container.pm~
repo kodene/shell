@@ -1,0 +1,260 @@
+package Generic::Container;
+$Generic::Container::VERSION = '1.000000';
+
+=head1 NAME
+
+Generic::Container - A Moo class for a strongly typed list of objects
+
+=head1 SYNOPSIS
+
+    # Use in other modules
+    use Generic::Container;
+    use URI;
+
+    my $container = Generic::Container->new('URI');
+
+    $container->add( URI->new("http://www.metacpan.org") );
+    $container->add_range( URI->new("http://www.cpan.org"),
+      URI->new("http://www.google.com") );
+
+    my $iterator = $container->get_iterator();
+
+    while ( my $object = $iterator->() ) {
+      # Do something with $object
+    }
+
+
+    # Extend functionality into another class
+    package MyUriContainer;
+
+    use Moo;
+    extends 'Generic::Container';
+
+    sub get_uri_by_path {
+        my $self = shift;
+
+        if ( @_ ) {
+            my $path = shift;
+            $self->SUPER::find_object( sub { $_->path eq $path } );
+        }
+    }
+
+=head1 DESCRIPTION
+
+This modules provides a strongly typed list of unique objects. The object name
+to be typed must be passed in through the constructor. This can either be a
+single string argument, or via hash using the B<T> attribute.
+
+Enforcement of objects is checked by using L<Data::Compare>.
+
+=head1 CONSTRUCTOR
+
+B<I<Single argument>>
+    my $container = Generic::Container->new( 'URI' );
+
+B<I<Hash ref>>
+    my $container = Generic::Container->new( T => 'URI' );
+
+=head1 AUTHOR
+
+Brian McCloskey
+
+=cut
+
+use Moo;
+use Result;
+use Types::Standard qw( Str Object );
+use List::Objects::Types qw( TypedArray );
+use Lexical::Accessor;
+use Data::Compare;
+use Carp qw( cluck );
+
+my $elements;
+
+=head1 CLASS ATTRIBUTES AND METHODS
+
+=head2 Attributes
+
+=over 12
+
+=item C<T>
+
+The name of the object (as a string) to type for the container.
+
+=back
+
+=cut
+
+has 'T' => (
+    is       => 'ro',
+    isa      => Str,
+    required => 1,
+);
+
+lexical_has 'elements' => (
+    is       => 'ro',
+    isa      => TypedArray[Object],
+    coerce   => 1,
+    init_arg => undef,
+    accessor => \$elements,
+);
+
+=head2 Methods
+
+=over 12
+
+=item C<add>
+
+Adds an object to the end of the container, and returns a L<Result> object.
+If the object was successfully added, C<< $result->is_error >> returns true,
+otherwise false.
+
+=cut
+
+sub add {
+    my $self = shift;
+
+    if ( ref $_[0] && $_[0]->isa($self->T) ) {
+        my $object = shift;
+
+        if ( $self->$elements->has_any( sub { Compare($_, $object) } ) ) {
+            return Result->new(
+                error   => 1,
+                message => 'Object already exists',
+            );
+        } else {
+            $self->$elements->push( $object );
+            return Result->new(
+                message => 'Object added',
+            );
+        }
+    } else {
+        return Result->new(
+            error   => 1,
+            message => ref($_[0]) . ' is not a ' . $self->T . ' object',
+        );
+    }
+}
+
+=item C<add_range>
+
+Adds a list of objects to the end of the container, and returns a L<Result>
+object. See C<add> above.
+
+=cut
+
+sub add_range {
+    my $self = shift;
+
+    if ( @_ ) {
+        for ( @_ ) {
+            my $result = $self->add( $_ );
+
+            if ( $result->is_error() ) {
+                return Result->new(
+                    error   => 1,
+                    message => $result->message,
+                );
+            }
+        }
+    }
+
+    return Result->new(
+        message => 'Objects added',
+    );
+}
+
+=item C<delete>
+
+Deletes an objects from the container, and returns a L<Result> object. If
+the object was successfully removed, C<< $result->is_error >> returns true,
+otherwise false.
+
+=cut
+
+sub delete {
+    my $self = shift;
+
+}
+
+=item C<get_iterator>
+
+Returns an iterator that can be used to step through the list.
+
+    my $iterator = $container->get_iterator();
+
+    while ( my $object = $iterator->() ) {
+        # Do something to $object
+    }
+
+=cut
+
+sub get_iterator {
+    my $self = shift;
+
+    return $self->$elements->natatime( 1 );
+}
+
+=item C<get_object>
+
+Takes a sub ref to search for an object, and returns a L<Result> object. If the
+object was found, C<< $result->is_error >> returns true, otherwise false. The
+object that was found will be available in C<< $result->data >>.
+
+=cut
+
+sub get_object {
+    my $self = shift;
+    my $object;
+
+    $object = $self->$elements->first_where( @_ );
+
+    if ( defined $object and ref $object ) {
+        return Result->new(
+            message => 'Object found',
+            data    => $object,
+        );
+    } else {
+        return Result->new(
+            error   => 1,
+            message => 'Object not found'
+        );
+    }
+}
+
+=item C<clear>
+
+Removes all objects from the container.
+
+=back
+
+=cut
+
+sub clear {
+    my $self = shift;
+
+    $self->$elements->clear();
+}
+
+around BUILDARGS => sub {
+    my $orig  = shift;
+    my $class = shift;
+
+    return {} unless @_;
+
+    if ( @_ == 1 and defined($_[0]) ) {
+        return {} unless length($_[0]);
+        return $class->$orig( T => $_[0] ) unless ref($_[0]);
+    }
+
+    return $class->$orig(@_);
+};
+
+sub BUILD {
+    my $self = shift;
+
+    $self->$elements( [] );
+}
+
+1;
+

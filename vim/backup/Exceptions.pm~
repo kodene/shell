@@ -1,0 +1,25 @@
+package WSB::Exceptions;
+use Moo;
+with 'Throwable';
+
+has 'message' => ( is => 'ro', required => 1 );
+
+{
+    package GeneralException;
+
+    use Moo;
+    extends WSB::Exception;
+}
+
+{
+    package FileException;
+
+    use Moo;
+    extends WSB::Exception;
+    use WSB::Types -types;
+
+    has 'filename' => ( is => 'rw', isa => Str );
+}
+
+
+1;

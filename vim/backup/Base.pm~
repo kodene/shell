@@ -1,0 +1,11 @@
+package WSB::Exception::Base;
+
+use Moo::Role;
+use WSB::Types qw( Str );
+with 'Throwable';
+
+requires qw( type );
+
+has 'message' => ( is => 'ro', isa => Str, required => 1 );
+
+1;

@@ -1,0 +1,138 @@
+#!/usr/bin/env perl
+# Copyright (C) 2013 by Brian McCloskey
+#
+# This file is part of colorchart.
+#
+# colorchart is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# colorchart is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with colorchart.  If not, see <http://www.gnu.org/licenses/>.
+################################################################################
+use Term::ANSIColor  qw(:constants256 colored);
+
+if (`tput cols` < 84) {
+	print "Terminal width needs to be at least 84 columns for the chart to display\n";
+	print "properly. Resize your terminal and re-run the script.\n";
+	exit 1;
+}
+
+$filler = sprintf "%7s";
+
+### Display RGB colors
+$header = sprintf "%-84s", "RGB CODES (rgb000..rgb555)";
+print colored($header, on_grey5, rgb420), "\n";
+foreach $group (0, 2, 4) {
+	foreach $row (0..5) {
+		foreach $col (0..5) {
+			if ($group == 2) { $r = (5 - $row % 6) } else { $r = $row }
+			@cell[$col] = "${group}${col}${r}";
+			@cell[$col + 6] = ($group + 1) . (5 - $col % 6) . "${r}";
+		}
+		foreach (0..2) {
+			foreach $col (0..11) {
+				if ($_ == 0 || $_ == 2) {
+					print colored($filler, "on_rgb${cell[$col]}");
+				} else {
+					if ($col < 2 || $col > 9) { $fg = "white" } else { $fg = "black" }
+					$label = sprintf "%-7s", "  ${cell[$col]}";
+					print colored($label, "on_rgb${cell[$col]}", $fg);
+				}
+			}
+			print "\n";
+		}
+	}
+	print "\n";
+}
+
+### Display Grey tones
+$header = sprintf "%-84s", "GREY CODES (grey0..grey23)";
+print colored($header, on_grey5, rgb420), "\n";
+foreach $row (0, 12) {
+	foreach (0..2) {
+		foreach $col (0..11) {
+			if ($_ == 0 || $_ == 2) {
+				print colored($filler, "on_grey".($col + $row));
+			} else {
+				if ($row == 0) { $fg = "white" } else { $fg = "black" }
+				$label = sprintf "%-7s", "   ".($col + $row);
+				print colored($label, "on_grey".($col + $row), $fg);
+			}
+		}
+		print "\n";
+	}
+}
+print "\n";
+
+### Display ansi colors
+$header = sprintf "%-84s", "ANSI CODES (ansi0..ansi15)";
+print colored($header, on_grey5, rgb420), "\n";
+foreach $group (0, 8) {
+	foreach (0..2) {
+		foreach $col (0..7) {
+			if ($_ == 0 || $_ == 2) {
+				print colored($filler, "on_ansi".($col+$group));
+			} else {
+				$fg = "black";
+				if ($col + $group == 0) { $fg = "white" }
+				$label = sprintf "%-7s", "   ".($col+$group);
+				print colored($label, "on_ansi".($col+$group), $fg);
+			}
+		}
+		if ($_ + $group == 1) { print "   xterm-256-color chart\n" } else { print "\n"; }
+	}
+}
+print "\n";
+
+# coloralias('base03', 'grey2'); # background
+# coloralias('base02', 'grey3'); # background highlights
+# coloralias('base01', 'grey8'); # comments
+# coloralias('base00', 'grey9');
+# coloralias('base0', 'grey12'); # body text
+# coloralias('base1', 'grey13'); # optional emphasized
+# coloralias('base2', 'grey22');
+# coloralias('base3', 'rgb554');
+# coloralias('syellow', 'rgb320');
+# coloralias('sorange', 'rgb410');
+# coloralias('sred', 'rgb400');
+# coloralias('smagenta', 'rgb301');
+# coloralias('sviolet', 'rgb113');
+# coloralias('sblue', 'rgb025');
+# coloralias('scyan', 'rgb033');
+# coloralias('sgreen', 'rgb120');
+# coloralias('on_base03', 'on_grey2'); # background
+# coloralias('on_base02', 'on_grey3'); # background highlights
+# coloralias('on_base01', 'on_grey8'); # comments
+# coloralias('on_base00', 'on_grey9');
+# coloralias('on_base0', 'on_grey12'); # body text
+# coloralias('on_base1', 'on_grey13'); # optional emphasized
+# coloralias('on_base2', 'on_grey22');
+# coloralias('on_base3', 'on_rgb554');
+# coloralias('on_syellow', 'on_rgb320');
+# coloralias('on_sorange', 'on_rgb410');
+# coloralias('on_sred', 'on_rgb400');
+# coloralias('on_smagenta', 'on_rgb301');
+# coloralias('on_sviolet', 'on_rgb113');
+# coloralias('on_sblue', 'on_rgb025');
+# coloralias('on_scyan', 'on_rgb033');
+# coloralias('on_sgreen', 'on_rgb120');
+#
+# @solarized = (on_base03, on_base02, on_base01, on_base00, on_base0,
+# 	on_base1, on_base2, on_base3, on_syellow, on_sorange, on_sred,
+# 	on_smagenta, on_sviolet, on_sblue, on_scyan, on_sgreen);
+#
+# $filler = sprintf "%5s";
+#
+# $header = sprintf "%-84s", "SOLARIZED PALETTE";
+# print colored($header, on_grey5, rgb420), "\n";
+# for (@solarized) {
+# 	print colored($filler, "$_");
+# }
+print "\n";

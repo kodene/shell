@@ -1,0 +1,22 @@
+package MyTest;
+
+use Moo;
+use Types::Standard qw( Str );
+use Lexical::Accessor;
+
+my $elements;
+
+lexical_has 'elements' => (
+    is  => 'rw',
+    isa => Str,
+    default => sub { 0 },
+    accessor => \$elements,
+);
+
+sub do_me {
+    my $self = shift;
+
+    print $self->$elements(1);
+}
+
+1;

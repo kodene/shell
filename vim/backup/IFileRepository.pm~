@@ -1,0 +1,39 @@
+package WSB::Storage::IFileRepository;
+
+use Moo::Role;
+use WSB::Types qw( AbsFile HashRef );
+use Lexical::Accessor;
+use YAML::XS;
+use Data::Dumper;
+
+requires 'find', 'findAll';
+
+my $config;
+
+has 'config_file' => (
+    is => 'ro',
+    isa => AbsFile,
+    coerce => 1,
+    required => 1,
+);
+
+lexical_has 'config' => (
+    is => 'rw',
+    isa => HashRef,
+    accessor => \$config,
+);
+
+sub load {
+    my $self = shift;
+    my $yaml;
+
+    $yaml = YAML::XS::LoadFile( $self->config_file );
+
+    if ( ref $yaml eq 'HASH' ) {
+        $self->$config( $yaml );
+    }
+    # $self->$config( YAML::XS::LoadFile( $self->config_file->stringify ) );
+    print Dumper( $self->$config );
+}
+
+1;

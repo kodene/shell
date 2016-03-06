@@ -1,0 +1,321 @@
+package WSB::Shell;
+use strict;
+use warnings;
+
+use IO::Prompter;
+use parent qw(Term::Shell);
+use Params::Validate qw(:all);
+use WSB;
+use WSB::Controller;
+
+sub run_status {
+	my $o = shift;
+	my $controller = new WSB::Controller();
+	
+	$controller->status();
+}
+
+sub smry_status {
+	'Display software status report';
+}
+
+sub help_status {
+	<<END;
+HELP - enable
+
+Displays software, and software plugin, information in a table. 
+
+The first column indicates the state of the software/plugin.
+    A - Software has been downloaded and unpacked.
+    I - Software/plugin is installed.
+    U - Software is upgradable, which is due to a change in software version.
+
+The second column is the software/plugin short name. If it is enabled, it is 
+colored green and pre-pended with a '+'. If it is disabled, it is colored red
+and pre-pended with a '-'. If the software is installed but in a dirty state, 
+it is colored yellow. Software plugins are indented below the software they 
+are tied with.
+
+The third column contains the software version (no version information exists
+for plugins).
+
+The last column is a descriptive name for the software/plugin.
+
+DIRTY STATE
+Software and software plugins can be placed in a dirty state. For software to
+become dirty, it must be installed and one of the following must be true:
+1. Software is upgradable.
+2. A software plugin gets marked dirty.
+
+For a software plugin to become dirty, the software it is tied to must be
+installed, and one of the following must be true:
+1. The plugin is installed and becomes disabled.
+2. The plugin is not installed and becomes enabled.
+END
+}
+
+sub run_enable {
+	my $o        = shift;
+	my @p        = validate_pos(@_, 1);
+	my $software = new WSB::Software();
+	
+	$software->enabled($p[0], 1);
+}
+
+sub comp_enable {
+	my ($o, $word, $line, $start) = @_;
+	my $software = new WSB::Software();
+	my @cmds     = ($software->get_software_list, $software->get_plugin_list);
+	my @partial  = ();
+	
+	if ($line =~ /\w+\s+\w+\s+/) {
+		return;
+	} elsif ($word eq '') {
+		return @cmds;
+	} else {
+		foreach (@cmds) {
+			if ($_ =~ m/^$word/) {
+				push(@partial, $_);
+			}
+		}
+		
+		return @partial;
+	}
+}
+
+sub smry_enable {
+	'Enable software or software plugin';
+}
+
+sub help_enable {
+	<<END;
+HELP - enable
+
+Marks a software or software plugin available to be built and installed.
+Note, however, that plugins are not built, but are used to identify additional 
+features at build time for a particular piece of software. Enabling a plugin 
+will allow that feature to be built.
+
+COMMANDS:
+	<name>  - Name of the software or software plugin to enable
+END
+}
+
+sub run_disable {
+	my $o        = shift;
+	my @p        = validate_pos(@_, 1);
+	my $software = new WSB::Software();
+	
+	$software->enabled($p[0], 0);
+}
+
+sub comp_disable {
+	my ($o, $word, $line, $start) = @_;
+	
+	return comp_enable($o, $word, $line, $start);
+}
+
+sub smry_disable {
+	'Disable software or software plugin';
+}
+
+sub help_disable {
+	<<END;
+HELP - disable
+
+Marks a software or software plugin un-available to be built and installed.
+Note, however, that plugins are not built, but are used to identify additional
+features at build time for a particular piece of software. Disabling a plugin
+will prevent that feature from being built.
+
+COMMANDS:
+    <name>  - Name of the software or software plugin to disable
+END
+}
+
+sub run_download {
+	my $o = shift;
+	my @p = validate_pos(@_, 0);
+	my $software = new WSB::Software();
+	my $controller = new WSB::Controller();
+	
+	if (defined $p[0]) {
+		return unless $controller->download($p[0]);
+	} else {
+		foreach ($software->get_software_list) {
+			return unless $controller->download($_);
+		}
+	}
+}
+
+sub comp_download {
+	my ($o, $word, $line, $start) = @_;
+	
+	return comp_enable($0, $word, $line, $start);
+}
+
+sub smry_download {
+	'Download the software archive';
+}
+
+sub help_download {
+	<<END;
+HELP - download
+
+Downloads the source archive for software. If no option is given, all software
+archives are downloaded, otherwise only the specified software is downloaded.
+
+NOTE: Only enabled software will be downloaded.
+
+COMMANDS:
+			- Attempt to download all software.
+	<name>  - Attempt to download individual software.
+END
+}
+
+sub run_build {
+	my $o = shift;
+	my @p = validate_pos(@_, 0);
+	my $software = new WSB::Software();
+	my $controller = new WSB::Controller();
+	
+	if (defined $p[0]) {
+		return unless $controller->build($p[0]);
+	} else {
+		foreach ($software->get_software_list) {
+			return unless $controller->build($_);
+		}
+	}
+}
+
+sub comp_build {
+	my ($o, $word, $line, $start) = @_;
+
+	return comp_enable($o, $word, $line, $start);
+}
+
+sub smry_build {
+	'Build software';
+}
+
+sub help_build {
+	<<END;
+HELP - build
+
+Compiles software without installing it. If the software archives have not been
+downloaded, they are retrieved and unpacked.
+
+NOTE: Only software that is enabled and have dependencies met can be built.
+
+COMMANDS:
+            - Attempt to build all software.
+    <name>  - Attempt to build software by name.
+END
+}
+
+sub run_install {
+	my $o = shift;
+	my @p = validate_pos(@_, 0);
+	my $software = new WSB::Software();
+	my $controller = new WSB::Controller();
+	
+	if (defined $p[0]) {
+		return unless $controller->install($p[0]);
+	} else {
+		foreach ($software->get_software_list()) {
+			return unless $controller->install($_);
+		}
+	}
+}
+
+sub comp_install {
+	my ($o, $word, $line, $start) = @_;
+
+	return comp_enable($o, $word, $line, $start);
+}
+
+sub smry_install {
+	'Install software';
+}
+
+sub help_install {
+	<<END;
+HELP - install
+
+Installs software. Initiates a software build to ensure changes are picked up.
+
+NOTE: Only software that is enabled and have dependencies met can be installed.
+
+COMMANDS:
+            - Attempt to install all enabled software.
+    <name>  - Attempt to install enabled software by name.
+END
+}
+
+sub run_ccache {
+	my $o = shift;
+	my @p = validate_pos(@_, 0, 0);
+	
+	if (not defined $p[0]) {
+		system("ccache", "-s");
+	} elsif ($p[0] eq 'clear') {
+		if (prompt("Are you sure you want to clear ccache? ", -y1)) {
+			system("ccache", "-c");
+		}
+	} elsif ($p[0] eq 'version') {
+		system("ccache", "-V");
+	} elsif ($p[0] eq 'size') {
+		if (not defined $p[0]) {
+			print STDERR "A value must be given for 'size'.\n";
+		} else {
+			system("ccache", "--max-size=${p[1]}");
+		}
+	} else {
+		print "Unknown option: $p[0].\n";
+	}
+}
+
+sub comp_ccache {
+	my ($o, $word, $line, $start) = @_;
+	my @cmds = ('clear', 'size', 'version');
+	my @partial;
+	
+	if ($line =~ /\w+\s+\w+\s+/) {
+		return;
+	} elsif ($word eq '') {
+		return @cmds;
+	} else {
+		foreach (@cmds) {
+			if ($_ =~ m/^$word/) {
+				push(@partial, $_);
+			}
+		}
+		
+		return @partial;
+	}
+}
+
+sub smry_ccache {
+	'ccache statistics and cache control';
+}
+
+sub help_ccache {
+	<<END;
+HELP - ccache
+
+Provides access to statistics for the compiler cache, as well as the ability to
+set the cache limit, and clear the cache.
+
+COMMANDS:
+            - Prints ccache statistics.
+    clear   - Clears the compiler cache.
+    size n  - Allows setting the cache size. The default is in gigabytes, but
+              G, M, or K can be used to specify giga, mega, and kilo bytes.
+    version - Prints version information for ccache.
+END
+}
+
+sub prompt_str {
+	'wsb-'.$WSB::VERSION.'> ';
+}
+1;

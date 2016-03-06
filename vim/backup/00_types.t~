@@ -1,0 +1,100 @@
+use Test::More;
+use Test::Fatal;
+use DateTime;
+
+{
+    package Test::WSB::Types;
+
+    use Moo;
+    use WSB::Types -types;
+
+    has 'name'      => ( is => 'rw', isa => Str );
+    has 'time'      => ( is => 'rw', isa => Datetime, coerce => 1 );
+    has 'url'       => ( is => 'rw', isa => Uri, coerce => 1 );
+    has 'path'      => ( is => 'rw', isa => Path, coerce => 1 );
+    has 'file'      => ( is => 'rw', isa => File, coerce => 1 );
+    has 'dir'       => ( is => 'rw', isa => Dir, coerce => 1 );
+    has 'absPath'   => ( is => 'rw', isa => AbsPath, coerce => 1 );
+    has 'absFile'   => ( is => 'rw', isa => AbsFile, coerce => 1 );
+    has 'absDir'    => ( is => 'rw', isa => AbsDir, coerce => 1 );
+    has 'build'     => ( is => 'rw', isa => SoftwareBuild, coerce => 1 );
+    has 'feature'   => ( is => 'rw', isa => SoftwareFeature, coerce => 1 );
+}
+
+### Create object
+my $test = Test::WSB::Types->new();
+my $dt = DateTime->now();
+
+ok( $test->name( "tester" ), "name set " );
+ok( $test->time( undef ), "time set using undef" );
+is( $test->time()->mdy(), $dt->mdy(), "time now mdy is " . $dt->mdy() );
+ok( $test->time( 1388577600 ), "time set using epoch" );
+is( $test->time()->mdy(), "01-01-2014", "time epoch mdy is 01-01-2014" );
+ok( $test->url( "http://test.tld/some/path" ), "url set" );
+
+SKIP: {
+    skip "REPO_DIR env not valid", 11 unless exists $ENV{REPO_DIR} && -d $ENV{REPO_DIR};
+
+    ok( $test->path( $ENV{REPO_DIR} ), "path set" );
+    ok( $test->file( $ENV{REPO_DIR} . "/README.md" ), "file set" );
+    like(
+        exception { $test->file( "/some/bogus/file" ) },
+        qr/File .* does not exist/,
+        "file exception when doesn't exist"
+    );
+    ok( $test->dir( $ENV{REPO_DIR} ), "dir set" );
+    like(
+        exception { $test->dir( "/some/bogus/dir/" ) },
+        qr/Directory .* does not exist/,
+        "dir exception when doesn't exist"
+    );
+    ok( $test->absPath( $ENV{REPO_DIR} ), "absPath set" );
+    like(
+        exception { $test->absPath( "bogus/" ) },
+        qr/Path .* is not absolute/,
+        "absPath exception when not absolute"
+    );
+    ok( $test->absFile( $ENV{REPO_DIR} . "/README.md" ), "absFile set" );
+    like(
+        exception { $test->absFile( "bogus/file" ) },
+        qr/File .* is not absolute/,
+        "absFile exception when not absolute"
+    );
+    ok( $test->absDir( $ENV{REPO_DIR} ), "absDir set" );
+    like(
+        exception { $test->absDir( "bogus/" ) },
+        qr/Directory .* is not absolute/,
+        "absDir exception when not absolute"
+    );
+}
+
+TODO: {
+    local $TODO = "Software::Build not implemented yet";
+
+    ok( $test->build(
+            {
+                configure => 'configure',
+                make      => 'make',
+                test      => 'make test',
+                install   => 'install',
+                clean     => 'make clean',
+            }
+        ), "build set"
+    );
+}
+
+TODO: {
+    local $TODO = "Software::Feature not implemented yet";
+
+    ok( $test->feature(
+            {
+                name         => 'feature one',
+                dependencies => [ 'software-1' ],
+                configure    => '--with-software-1',
+            }
+        ), "feature set"
+    );
+}
+
+
+done_testing();

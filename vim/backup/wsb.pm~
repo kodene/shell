@@ -1,0 +1,22 @@
+package wsb;
+
+# use Moo;
+
+use Cwd qw( abs_path );
+use File::Basename;
+# has 'dir' => (
+#     is => 'rw',
+# );
+
+# sub get_dir {
+BEGIN {
+    my $dir = dirname(abs_path($INC{'wsb.pm'}));
+
+    $dir = abs_path( "$dir/.." );
+    push @INC, "$dir/lib";
+    push @INC, "$dir/app/entities";
+    # push @INC, "$dir/app/boundaries";
+    # push @INC, "$dir/app/controllers";
+}
+
+1;

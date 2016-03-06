@@ -1,0 +1,35 @@
+package SoftwareTest;
+
+use base 'Test::Class';
+use Test::More;
+use Software;
+
+sub load : Test(setup) {
+    my $self = shift;
+    # $self->{software} = Software->new();
+    $self->{software} = Software->new({config_dir => '/repo/wsb/t', config_filename => 'config.yml'});
+};
+
+sub _check_object : Test {
+    my $self = shift;
+    my $s = $self->{software};
+
+    isa_ok( $s, 'Software' );
+};
+
+sub verify_config_dir : Test(2) {
+    my $self = shift;
+    my $s = $self->{software};
+
+    is($s->config_dir(), '/repo/wsb/t');
+    is($s->config_file(), '/repo/wsb/t/config.yml');
+};
+
+sub test_short_name : Test(1) {
+    my $self = shift;
+
+    is( $self->{software}->short_name(), 'test' );
+    # is( $self->{software}->short_name('test_manual'), 'test_manual');
+};
+
+1;

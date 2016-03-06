@@ -1,0 +1,67 @@
+package WSB::Color;
+use strict;
+use warnings;
+
+use parent qw(Class::StrongSingleton);
+use Term::ANSIColor qw(coloralias colored RESET);
+use Params::Validate qw(:all);
+
+sub new {
+	my $class = shift;
+	my $self  = {};
+	
+	bless($self, $class);
+	
+	$self->_init_StrongSingleton();
+	return $self;
+}
+
+sub success {
+	my $self = shift;
+	my $msg  = shift;
+	
+	return colored($msg, "green");
+}
+
+sub warn {
+	my $self = shift;
+	my $msg  = shift;
+	
+	return colored($msg, "yellow");
+}
+
+sub error {
+	my $self = shift;
+	my $msg  = shift;
+	
+	return colored($msg, "red");
+}
+
+sub comment {
+	my $self = shift;
+	my $msg  = shift;
+	
+	return colored($msg, "bright_black");
+}
+
+sub header_info {
+	my $self = shift;
+	my $msg  = shift;
+	
+	return colored($msg, "on_cyan", "black");
+}
+
+sub header_warn {
+	my $self = shift;
+	my $msg  = shift;
+	
+	return colored($msg, "on_yellow", "black");
+}
+
+sub header_error {
+	my $self = shift;
+	my $msg  = shift;
+	
+	return colored($msg, "on_red", "black");
+}
+1;

@@ -1,0 +1,6 @@
+package MyTwo;
+
+use Moo;
+extends 'MyOne';
+
+1;

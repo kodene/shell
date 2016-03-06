@@ -1,0 +1,14 @@
+Host step
+  HostName host.step-project.com
+  Port 2200
+  IdentityFile ~/.ssh/step_id_rsa
+  User brian
+Host stepdev
+  HostName wiki.test.tld
+  Port 22
+  IdentityFile /f/PROJECTS/vagrant/step/ssh/siteadmin_id_rsa
+  User siteadmin
+Host github.com
+  HostName github.com
+  IdentityFile /e/home/Brian/.ssh/github_id_rsa
+  User git

@@ -1,0 +1,12 @@
+package Software::Category;
+
+use Moose::Role;
+use WSB::Types;
+
+has 'category' => (
+    is  => 'rw',
+    isa => 'SoftwareCategory',
+);
+            if ($
+
+1;

@@ -1,0 +1,14 @@
+package WSB::Storage::Software::SQLite;
+
+use Moo;
+with 'WSB::Storage';
+
+sub load {
+    my $self = shift;
+}
+
+sub save {
+    my $self = shift;
+}
+
+1;

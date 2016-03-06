@@ -1,0 +1,8 @@
+#!/bin/bash
+
+scriptName=$( basename $0 )
+scriptPath=${scriptName##*/}
+
+
+echo $scriptName
+echo $scriptPath

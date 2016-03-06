@@ -1,0 +1,4 @@
+test:
+	prove -l t/run.t
+testv:
+	prove -lv t/run.t

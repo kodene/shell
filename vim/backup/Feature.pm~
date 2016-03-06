@@ -1,0 +1,42 @@
+package Software::Feature;
+
+use Types::Standard qw( Str );
+use List::Objects::Types qw( ImmutableTypedArray );
+use Moo;
+# with 'Software::StateRole';
+use namespace::clean;
+
+
+# has 'name' => (
+#     is       => 'ro',
+#     isa      => Str,
+#     required => 1,
+# );
+#
+# has 'configure' => (
+#     is        => 'ro',
+#     isa       => Str,
+#     coerce    => 1,
+#     predicate => 1,
+# );
+#
+# has 'dependencies' => (
+#     is        => 'ro',
+#     isa       => ImmutableTypedArray[Str],
+#     coerce    => 1,
+#     predicate => 'has_dependency',
+# );
+
+
+sub get_dependencies {
+    my $self = shift;
+    my @deps = ();
+
+    if ( $self->has_dependency ) {
+        @deps = $self->dependencies->elements;
+    }
+
+    return @deps;
+}
+
+1;

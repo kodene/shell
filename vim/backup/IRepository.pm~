@@ -1,0 +1,8 @@
+package Software::IRepository;
+
+use Moo::Role;
+
+requires 'load';
+
+1;
+

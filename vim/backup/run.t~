@@ -1,0 +1,16 @@
+#!/usr/bin/env perl
+
+use lib 'lib';
+
+use Test::Class::Load qw<t>;
+use Test::Software::Build;
+use Test::Software::Feature;
+use Test::Software;
+
+Test::Class->runtests(
+    qw(
+        Test::Software::Build
+        Test::Software::Feature
+        Test::Software
+    )
+);

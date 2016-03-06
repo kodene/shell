@@ -1,0 +1,7 @@
+package Storage;
+
+use Moo::Role;
+
+requires 'load', 'save';
+
+1;

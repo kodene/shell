@@ -1,0 +1,24 @@
+package WSB::ListRole;
+
+use Mouse::Role;
+
+has 'index' => (
+    traits  => ['Counter'],
+    is      => 'ro',
+    isa     => 'Int',
+    default => 0,
+    handles => {
+        next  => 'inc',
+        reset => 'reset',
+    },
+);
+
+sub current {
+    my $self = shift;
+
+    $self->Item( $self->index );
+}
+
+no Mouse::Role;
+
+1;

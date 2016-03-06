@@ -1,0 +1,6 @@
+ 1411  cpanm Moo
+  1412  cpanm Type::Tiny
+   1413  cpanm URI
+    1414  cpanm List::Objects::Types
+     1418  cpanm Path::Tiny
+      1420  cpanm namespace::clean

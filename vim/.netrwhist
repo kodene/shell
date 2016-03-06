@@ -1,0 +1,11 @@
+let g:netrw_dirhistmax  =10
+let g:netrw_dirhist_cnt =9
+let g:netrw_dirhist_1='/repo/wsb/conf'
+let g:netrw_dirhist_2='/repo/wsb/lib/Software'
+let g:netrw_dirhist_3='/repo/wsb/lib/WSB/Storage'
+let g:netrw_dirhist_4='/home/brian/.perlbrew/libs/dev@moo/lib/perl5/x86_64-linux/Function/Parameters'
+let g:netrw_dirhist_5='/repo/wsb/lib'
+let g:netrw_dirhist_6='/repo/wsb/lib/WSB'
+let g:netrw_dirhist_7='/repo/wsb/lib/WSB/Feature'
+let g:netrw_dirhist_8='/repo/wsb/lib/WSB'
+let g:netrw_dirhist_9='/home/brian/.perlbrew/libs/dev@catalyst/lib/perl5/Catalyst/Request'

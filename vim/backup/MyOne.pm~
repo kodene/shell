@@ -1,0 +1,5 @@
+package MyOne;
+
+use Moo;
+
+1;

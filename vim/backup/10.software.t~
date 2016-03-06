@@ -1,0 +1,9 @@
+use Test::More;
+use Test::Fatal;
+use WSB;
+
+my $wsb = WSB->new();
+
+isa_ok( $wsb, 'WSB', 'Object created' );
+
+done_testing();

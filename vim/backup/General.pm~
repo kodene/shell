@@ -1,0 +1,13 @@
+package Exception::General;
+
+use Moo;
+extends 'Throwable::Error';
+# use Types::Standard qw( Str );
+
+has type => (
+    is      => 'ro',
+    isa     => 'Str',
+    default => 'GeneralException',
+);
+
+1;

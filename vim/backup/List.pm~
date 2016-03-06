@@ -1,0 +1,63 @@
+package List;
+
+use Moo;
+use Types::Standard qw( Str Object );
+use List::Objects::Types qw( TypedArray );
+use List::Objects::WithUtils 'autobox';
+# use Lexical::Accessor;
+use Carp;
+
+has 'T' => (
+    is       => 'ro',
+    isa      => Str,
+    required => 1,
+);
+
+has 'elements' => (
+    is       => 'ro',
+    isa      => TypedArray[Object],
+    coerce   => 1,
+    default  => sub { [] },
+    init_arg => undef,
+);
+
+sub add {
+    my $self = shift;
+
+    if ( ref $_[0] && $_[0]->isa($self->T) ) {
+        $self->elements->push($_[0]);
+    } else {
+        my $cname1 = $self->T;
+        my $cname2 = ref $_[0];
+        croak( "$cname2 is not a $cname1 object.");
+    }
+}
+
+sub get_all {
+    my $self = shift;
+
+    return $self->elements->elements;
+}
+
+sub iterator {
+    my $self = shift;
+
+    return $self->T->natatime( 1 );
+}
+
+around BUILDARGS => sub {
+    my $orig  = shift;
+    my $class = shift;
+
+    return {} unless @_;
+
+    if ( @_ == 1 and defined($_[0]) ) {
+        return {} unless length($_[0]);
+        return $class->$orig( T => $_[0] ) unless ref($_[0]);
+    }
+
+    return $class->$orig(@_);
+};
+
+
+1;

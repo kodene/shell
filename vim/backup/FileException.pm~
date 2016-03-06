@@ -1,0 +1,8 @@
+package FileException;
+
+use Moo;
+with 'WSB::Exception::Base';
+
+has 'filename' => ( is => 'ro' );
+
+1;

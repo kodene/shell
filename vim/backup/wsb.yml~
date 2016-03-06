@@ -1,0 +1,11 @@
+wsb:
+    version: 1.0
+    downloads: /tmp
+    src: /tmp
+
+db:
+    file: wsb.db
+    type: SQLite
+    user:
+    password:
+

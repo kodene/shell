@@ -1,0 +1,66 @@
+package WSB::Storage::Software::File;
+
+use Moo;
+with 'WSB::Storage';
+use WSB;
+use WSB::TypeLibrary qw( AbsDir Str );
+use YAML::XS;
+use Path::Tiny;
+
+my $wsb = WSB->instance();
+
+has 'plugin_dir' => (
+    is       => 'ro',
+    isa      => AbsDir,
+    default  => sub { $wsb->home->stringify . '/plugins' },
+    coerce   => 1,
+    init_arg => undef,
+);
+
+has 'config_file' => (
+    is       => 'ro',
+    isa      => Str,
+    default  => sub { 'config.yml' },
+    init_arg => undef,
+);
+
+sub load {
+    my $self = shift;
+    my $name = shift;
+    my $file = path( $self->plugin_dir . "/${name}/" . $self->config_file );
+    my $yaml;
+
+    if ( $file->is_file() ) {
+        $yaml = YAML::XS::LoadFile( $file->stringify );
+    }
+
+    if ( defined $yaml ) {
+        return $yaml;
+    } else {
+        return undef;
+    }
+}
+
+sub loadAll {
+    my $self = shift;
+    my $iter = path( $self->plugin_dir )->iterator();
+    my @yaml;
+
+    while ( my $dir = $iter->() ) {
+        if ( $dir->is_dir() ) {
+            my $yaml = $self->find( $dir->basename() );
+
+            if ( defined $yaml ) {
+                push( @yaml, $yaml );
+            }
+        }
+    }
+
+    return @yaml;
+}
+
+sub save {
+    return undef;
+}
+
+1;

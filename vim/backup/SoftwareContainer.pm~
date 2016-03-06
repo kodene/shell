@@ -1,0 +1,42 @@
+package Entity::SoftwareContainer;
+
+use Moo;
+use WSB::Types qw( ArrayRef Software );
+# extends 'Generic::Container';
+# use WSB::Config;
+# use Graph;
+
+# my $config = WSB::Config->instance();
+
+has 'software' => (
+    is       => 'rw',
+    isa      => ArrayRef[Software],
+    required => 1,
+);
+
+around BUILDARGS => sub {
+    my $orig  = shift;
+    my $class = shift;
+
+    return {} unless @_;
+
+    if ( @_ == 1 and defined($_[0]) ) {
+        return {} unless length($_[0]);
+        return $class->$orig( software => $_[0] ) unless ref($_[0]);
+    }
+
+    return $class->$orig(@_);
+};
+
+# sub get_software_by_name {
+#     my $self = shift;
+#
+#     if ( @_ == 1 ) {
+#         my $name = shift;
+#
+#         return $self->SUPER::get_object( sub { $_->name eq $name } );
+#     }
+# }
+
+
+1;

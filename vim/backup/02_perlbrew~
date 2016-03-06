@@ -1,0 +1,30 @@
+alias less='less -R'
+alias more='less'
+
+alias h='history'
+alias ..='cd ..'
+alias libpath='echo -e ${LD_LIBRARY_PATH}"'
+
+if [[ $OS == *Linux ]]; then
+    alias ls='ls --color'
+fi
+alias la='ls -altr'
+alias lx='ls -lXB'      ### Sort by extension
+alias lk='ls -ISr'      ### Sort by size, biggest last
+alias lt='ls -ltr'      ### Sort by time, most recent last
+alias lc='ls -ltcr'     ### Sort by ctime, most recent last
+alias lu='ls -ltur'     ### Sort by atime, most recent last
+alias lld='ls -ld * | grep "^d"' ### Only list directories
+
+alias vi='vim'
+
+# perlbrew support
+alias pb='perlbrew'
+alias pbls='perlbrew list'
+alias pbr='perlbrew uninstall'
+alias pbu='perlbrew use'
+alias pblc='perlbrew lib create'
+alias pbld='perlbrew lib delete'
+
+################################################################################
+### vim: ft=sh :

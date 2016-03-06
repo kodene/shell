@@ -1,0 +1,17 @@
+package WSB::Paths;
+
+use Moose::Role;
+use MooseX::Types::Path::Tiny qw(Path);
+
+has 'home' => (
+    is      => 'ro',
+    isa     => Path,
+    default => sub { $ENV{WSB_HOME} || '' },
+    coerce  => 1,
+    handles => {
+        get_home => 'stringify',
+        get_bin  => 'child("bin")',
+    },
+);
+
+1;
