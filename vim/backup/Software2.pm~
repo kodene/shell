@@ -1,9 +1,0 @@
-package Software2.pm;
-
-use Moo;
-
-has 'name' => (
-    is => 'rw',
-);
-
-1;

@@ -1,7 +1,0 @@
-package WSB::Exception::GeneralException;
-
-use Moo;
-use Throwable::Error;
-
-
-1;

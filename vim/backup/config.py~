@@ -1,7 +1,0 @@
-import os
-import json
-
-file = open("config.json")
-config = json.load(file)
-
-print config["name"]

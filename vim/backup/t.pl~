@@ -1,7 +1,0 @@
-#!/usr/bin/env perl
-
-use My;
-
-my $m = My->new();
-
-$m->hello("Brian");
