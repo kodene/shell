@@ -5,7 +5,7 @@ alias h='history'
 alias ..='cd ..'
 alias libpath='echo -e ${LD_LIBRARY_PATH}"'
 
-if [[ $OS == *Linux ]]; then
+if [[ $OS == *Linux || $OS = 'Cygwin' ]]; then
     alias ls='ls --color'
 fi
 alias la='ls -altr'
