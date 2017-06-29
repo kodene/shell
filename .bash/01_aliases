@@ -8,13 +8,18 @@ alias libpath='echo -e ${LD_LIBRARY_PATH}"'
 if [[ $OS == *Linux || $OS = 'Cygwin' ]]; then
     alias ls='ls --color'
 fi
-alias la='ls -altr'
+alias ll='ls -l'		### Show long list
+alias la='ls -Altr'		### Show hidden files, long listing, sorted
 alias lx='ls -lXB'      ### Sort by extension
 alias lk='ls -ISr'      ### Sort by size, biggest last
 alias lt='ls -ltr'      ### Sort by time, most recent last
 alias lc='ls -ltcr'     ### Sort by ctime, most recent last
 alias lu='ls -ltur'     ### Sort by atime, most recent last
 alias lld='ls -ld * | grep "^d"' ### Only list directories
+
+alias grep='grep --color'
+alias egrep='egrep --color=auto'
+alias fgrep='fgrep --color=auto'
 
 alias vi='vim'
 

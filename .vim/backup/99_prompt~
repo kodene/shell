@@ -1,0 +1,12 @@
+### vim: ft=sh
+
+export PROMPT_CONFIG="( left => [ ['user', 'readonly'], ['path'], ['errorcode'] ], right => [ ['time'] ] )"
+export PROMPT_SKIN="( left => [ { fg => '236', bg => '103' }, {fg => '244', bg => '236' }, {fg => '250', bg => '239'}, {fg => '166', bg => '239'}, {fg => '160', bg => '236'} ], right => [ {fg => '250', bg => '239'}, {fg => '244', bg => '236' } ])"
+
+gen_prompt() {
+    export ERRORCODE=$?
+
+    PS1=$( $HOME/bin/prompt.pl )
+}
+
+PROMPT_COMMAND='gen_prompt'

@@ -1,0 +1,22 @@
+[CA]
+pki_admin_email=root@localhost
+pki_admin_name=caadmin
+pki_admin_nickname=caadmin
+pki_admin_password=I8mfiner
+pki_admin_uid=caadmin
+
+pki_client_database_password=I8mfiner
+pki_client_database_purge=False
+pki_client_pkcs12_password=I8mfiner
+
+pki_ds_base_dn=dc=ca,dc=pki,dc=acs21,dc=af,dc=mil
+pki_ds_database=ca
+pki_ds_password=I8mfiner
+
+pki_security_domain_name=PKI CA Security Domain
+
+pki_ds_secure_connection=True
+pki_ds_hostname=${HOSTNAME}
+pki_ds_ldaps_port=636
+pki_ds_secure_connection_ca_nickname=DS Certificate
+pki_ds_secure_connection_ca_pem_file=ds.crt

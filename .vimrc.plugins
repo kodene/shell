@@ -1,103 +1,68 @@
-" Vundle support
-filetype off
-
-set rtp+=~/.vim/bundle/Vundle.vim
-call vundle#begin()
-
-" Vundle required
-Plugin 'VundleVim/Vundle.vim'
-" Libraries used by other plugins
-Plugin 'MarcWeber/vim-addon-mw-utils'
-Plugin 'tomtom/tlib_vim'
-
-if executable('ack')
-    Plugin 'mileszs/ack.vim'
-endif
+" vim: fdm=marker
+call plug#begin('~/.vim/plugins')
 
 " Color Schemes
-Plugin 'nanotech/jellybeans.vim'
-" Edit support
-Plugin 'Lokaltog/vim-easymotion'
-Plugin 'tpope/vim-surround'
-Plugin 'ervandew/supertab'
-" Plugin 'garbas/vim-snipmate'
-" Plugin 'honza/vim-snippets'
-Plugin 'tomtom/tcomment_vim'
-Plugin 'kien/ctrlp.vim'
-" Session/View support
-Plugin 'xolox/vim-misc'
-Plugin 'xolox/vim-session'
-" UI Support
-Plugin 'itchyny/lightline.vim'
-"Plugin 'bling/vim-airline'
-Plugin 'edkolev/tmuxline.vim'
-" General Programming Support
-Plugin 'tpope/vim-fugitive'
-Plugin 'Raimondi/delimitMate'
-Plugin 'scrooloose/syntastic'
-" PHP support
-Plugin 'StanAngeloff/php.vim'
-" Perl support
-Plugin 'vim-perl/vim-perl'
-" Python support
-Plugin 'davidhalter/jedi-vim'
-" Puppet Support
-Plugin 'rodjek/vim-puppet'
+Plug 'nanotech/jellybeans.vim'
+Plug 'rakr/vim-two-firewatch'
+" Editing
+Plug 'ervandew/supertab'
+Plug 'tpope/vim-surround'
+Plug 'easymotion/vim-easymotion'
+Plug 'tomtom/tcomment_vim'
+Plug 'ctrlpvim/ctrlp.vim'
+Plug 'dietsche/vim-lastplace'
+" Sessions/Views
+Plug 'xolox/vim-misc'
+Plug 'xolox/vim-session'
+" Programming
+Plug 'vim-syntastic/syntastic'
+Plug 'airblade/vim-gitgutter'
+Plug 'vim-scripts/vim-svngutter'
+Plug 'tpope/vim-fugitive'
+" Ansible
+Plug 'pearofducks/ansible-vim'
+" Python
+Plug 'davidhalter/jedi-vim'
+" Perl
+Plug 'vim-perl/vim-perl'
+" Puppet
+Plug 'puppetlabs/puppet-syntax-vim'
+" UI
+Plug 'itchyny/lightline.vim'
+Plug 'edkolev/tmuxline.vim'
 
-call vundle#end()
+call plug#end()
 filetype plugin indent on
 
-" Plugin settings {{{
-    " scrooloose/syntastic
+" syntastic {{{
     set statusline+=%#warningmsg#
     set statusline+=%{SyntasticStatuslineFlag()}
     set statusline+=%*
-    let g:syntastic_perl_checkers='perl'
-    let g:syntastic_enable_perl_checker=1
-    let g:syntastic_always_populate_loc_list=1
-    let g:syntastic_auto_loc_list=1
-    let g:syntastic_check_on_open=1
-    let g:syntastic_check_on_wq=0
-    " tomtom/tcomment_vim
+    let g:syntastic_always_populate_loc_list = 1
+    let g:syntastic_auto_loc_list = 1
+    let g:syntastic_check_on_open = 1
+    let g:syntastic_check_on_wq = 0
+" }}}
+
+" tcomment_vim {{{
     nmap ,c <C-_><C-_>
-    " xolox/vim-session
+" }}}
+
+" session {{{
     let g:session_autoload='no'
     let g:session_autosave='yes'
     let g:session_verbose_messages=0
     let g:session_default_to_last=0
-    " kien/ctrlp.vim
-    nnoremap <leader>. :CtrlPTag<CR>
-    " majutsushi/tagbar
-    nnoremap <F9> :TagbarToggle<CR>
-    let g:tagbar_autoclose = 1
-    let g:tagbar_type_perl = {
-        \ 'ctagstype' : 'Perl',
-        \ 'kinds' : [
-        \ 'p:packages:1:0',
-        \ 'u:uses:1:0',
-        \ 'r:requires:1:0',
-        \ 'e:extends',
-        \ 'w:roles',
-        \ 'o:ours:1:0',
-        \ 'c:constants:1:0',
-        \ 'f:formats:1:0',
-        \ 'a:attributes',
-        \ 's:subroutines',
-        \ 'm:methods',
-        \ 'x:around:1:,,0',
-        \ 'l:aliases',
-        \ 'd:pod:1:0',
-        \ ],
-        \ }
+" }}}
 
-    let delimitMate_expand_cr = 1
-    " davidhalter/jedi-vm
+" jedi {{{
     let g:jedi#use_tabs_not_buffers = 1
     let g:jedi#use_splits_not_buffers = "right"
 " }}}
 
 " Lightline Configuration {{{
     let g:lightline = {
+        \ 'colorscheme': 'twofirewatch',
         \ 'active': {
         \   'left': [ [ 'mode', 'paste' ], [ 'fugitive', 'readonly', 'filename', 'modified' ] ],
         \   'right': [ [ 'lineinfo' ], [ 'percent' ], [ 'fileformat', 'fileencoding', 'filetype' ] ]
@@ -150,5 +115,3 @@ filetype plugin indent on
         return winwidth(0) > 60 ? lightline#mode() : ''
     endfunction
 " }}}
-
-" vim: fdm=marker

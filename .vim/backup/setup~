@@ -1,0 +1,220 @@
+#!/bin/bash
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+SCRIPT_NAME="$( basename "$0")"
+SCRIPT_CONFIG="${SCRIPT_DIR}/${SCRIPT_NAME}.cfg"
+SCRIPT_LOG="${SCRIPT_DIR}/${SCRIPT_NAME}.log"
+
+COLOR_DIM="[38;5;245m"
+COLOR_MSG="[38;5;037m"
+COLOR_INFO="[38;5;037m"
+COLOR_ERROR="[38;5;160m"
+COLOR_OK="[38;5;064m"
+COLOR_END="[0m"
+
+
+### CUSTOM FUNCTIONS ----------------------------------------------------------
+install() {
+    directory="${SCRIPT_DIR}/packages/${1}"
+    dnf install -y ${directory}/*.rpm
+}
+
+setup_ds() {
+    message "389 Directory Service - Setup"
+    setup-ds.pl --silent \
+                General.FullMachineName=$( hostname ) \
+                General.SuiteSpotUserID=nobody \
+                General.SuiteSpotGroup=nobody \
+                slapd.ServerPort=389 \
+                slapd.ServerIdentifier=pki-tomcat \
+                slapd.Suffix="${DS_SUFFIX}" \
+                slapd.RootDN="${DS_ROOT_DN}" \
+                slapd.RootDNPwd="${DS_ROOT_DN_PASS}"
+}
+
+setup_ds_secure() {
+    message "389 Directory Server - Enable SSL"
+    message "stopping 389 directory server"
+
+    systemctl stop dirsrv@pki-tomcat.service
+
+    message "create self-signed certificate"
+
+    echo "${DS_ROOT_DN_PASS}" > /etc/dirsrv/slapd-pki-tomcat/password.txt
+    chown nobody:nobody /etc/dirsrv/slapd-pki-tomcat/password.txt
+    chmod 400 /etc/dirsrv/slapd-pki-tomcat/password.txt
+
+    echo "Internal (Software) Token:${DS_ROOT_DN_PASS}" > /etc/dirsrv/slapd-pki-tomcat/pin.txt
+    chown nobody:nobody /etc/dirsrv/slapd-pki-tomcat/pin.txt
+    chmod 400 /etc/dirsrv/slapd-pki-tomcat/pin.txt
+
+    # set the NSS database password
+    certutil -W -d /etc/dirsrv/slapd-pki-tomcat -f /etc/dirsrv/slapd-pki-tomcat/password.txt
+
+    # generate temporary certificate
+    openssl req -newkey rsa:2048 -keyout ds.key -nodes -x509 -out ds.crt -subj "/CN=$HOSTNAME" -days 365
+
+    openssl pkcs12 -export -in ds.crt -inkey ds.key -out ds.p12 -name "DS Certificate" \
+                   -passout file:/etc/dirsrv/slapd-pki-tomcat/password.txt
+    pk12util -i ds.p12 -d /etc/dirsrv/slapd-pki-tomcat \
+             -k /etc/dirsrv/slapd-pki-tomcat/password.txt \
+             -w /etc/dirsrv/slapd-pki-tomcat/password.txt
+    certutil -M -d /etc/dirsrv/slapd-pki-tomcat -n "DS Certificate" -t "CT,C,C"
+
+    # configure ldap ssl
+    message "starting directory server"
+    systemctl start dirsrv@pki-tomcat.service
+
+    message "enable SSL/disable PLAIN"
+    echo "${SLAPD_SSL_ENABLE}" | ldapmodify -x -D "${DS_ROOT_DN}" -w "${DS_ROOT_DN_PASS}"
+    echo "${SLAPD_PLAIN_DISABLE}" | ldapmodify -x -D "${DS_ROOT_DN}" -w "${DS_ROOT_DN_PASS}"
+
+    message "restarting 389 directory server"
+
+    systemctl restart dirsrv@pki-tomcat.service
+
+    message "testing secure connection"
+    LDAPTLS_CACERTDIR=/etc/dirsrv/slapd-pki-tomcat \
+        ldapsearch -H ldaps://$HOSTNAME:636 \
+        -x -D "${DS_ROOT_DN}" -w "${DS_ROOT_DN_PASS}" \
+        -b "${DS_SUFFIX}" -s base "(objectClass=*)"
+
+    if [[ $? != 0 ]]; then
+        echo
+        echo "Secure connection ${COLOR_BAD}FAILED${COLOR_END}"
+        exit
+    fi
+}
+
+
+setup_ca() {
+    pkispawn -s CA -f deployment.cfg
+    systemctl stop dirsrv@pki-tomcat.service
+    PKCS10Client -d /etc/dirsrv/slapd-pki-tomcat -p I8mfiner -a rsa -l 2048 -o ds.csr -n "CN=$HOSTNAME"
+    systemctl start dirsrv@pki-tomcat.service
+    pki -d /etc/dirsrv/slapd-pki-tomcat ca-cert-request-submit --profile caServerCert --csr-file ds.csr
+    pki -c I8mfiner client-init
+
+}
+
+
+### APP FUNCTIONS -------------------------------------------------------------
+message() {
+    message="$1"
+
+    printf "${COLOR_DIM}::${COLOR_END} ${COLOR_MSG}%s${COLOR_END}\n" "$message"
+}
+
+prefix() {
+    local line
+    local time="date +'%m/%d %H:%M:%S'"
+
+    while read line; do
+	    printf "[${COLOR_DIM}%s${COLOR_END}] %s\n" "$( $time )" "$line"
+    done
+}
+
+
+### MAIN ----------------------------------------------------------------------
+init() {
+    ### called before main, output not logged
+    install "update"
+    install "vim"
+    install "tmux"
+    install "389-ds"
+    install "dogtag"
+}
+
+main() {
+    # echo "placeholder"
+    setup_ds
+}
+
+
+### INLINE CONFIGURATIONS -----------------------------------------------------
+### SLAPD enable SSL
+read -r -d '' SLAPD_SSL_ENABLE <<EOF
+dn: cn=config
+changetype: modify
+replace: nsslapd-security
+nsslapd-security: on
+
+dn: cn=RSA,cn=encryption,cn=config
+changetype: add
+objectclass: top
+objectclass: nsEncryptionModule
+cn: RSA
+nsSSLPersonalitySSL: DS Certificate
+nsSSLToken: internal (software)
+nsSSLActivation: on
+EOF
+
+### SLAPD disable plain
+read -r -d '' SLAPD_PLAIN_DISABLE <<EOF
+dn: cn=config
+changetype: modify
+replace: nsslapd-allow-anonymous-access
+nsslapd-allow-anonymous-access: rootdse
+-
+replace: nsslapd-minssf
+nsslapd-minssf: 56
+-
+replace: nsslapd-require-secure-binds
+nsslapd-require-secure-binds: on
+-
+EOF
+
+### Dogtag CA configuration
+read -r -d '' DOGTAG_CA_CONF <<EOF
+pki_admin_email=caadmin@${EMAIL_DOMAIN}
+pki_admin_name=caadmin
+pki_admin_nickname=caadmin
+pki_admin_password=${CAADMIN_PASS}
+pki_admin_uid=caadmin
+pki_backup_password=${CAADMIN_PASS}
+pki_client_database_password=PASSWORD
+pki_client_database_purge=False
+pki_client_pkcs12_password=PASSWORD
+pki_clone_pkcs12_password=PASSWORD
+pki_ds_base_dn=dc=ca,dc=example,dc=com
+pki_ds_database=ca
+pki_ds_password=PASSWORD
+pki_security_domain_name=EXAMPLE
+pki_token_password=PASSWORD
+pki_https_port=8373
+pki_http_port=8370
+pki_ajp_port=8379
+pki_tomcat_server_port=8375
+EOF
+
+
+### SETUP ---------------------------------------------------------------------
+# init
+
+### source config file
+if [[ -f ${SCRIPT_CONFIG} ]]; then
+    source ${SCRIPT_CONFIG}
+fi
+
+### log STDOUT and STDERR to a log file
+exec &> >(tee -ia "${SCRIPT_LOG}")
+
+### create FIFOs for STDOUT and STDERR
+stdout=$( mktemp -u )
+stderr=$( mktemp -u )
+mkfifo "$stdout" "$stderr"
+
+### cleanup FIFOs when script exits
+trap 'rm -f "$stdout" "$stderr"' EXIT
+
+### prepend information on STDOUT and STDERR
+prefix < "$stdout" >&1 &
+prefix < "$stderr" >&2 &
+
+### call main and redirect STDOUT/STDERR to the FIFOs
+main 1> "$stdout" 2> "$stderr"
+exitcode=$?
+
+### wait for prefix commands to finish, then exit
+wait
+exit $exitcode

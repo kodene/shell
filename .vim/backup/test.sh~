@@ -1,0 +1,7 @@
+#!/bin/bash
+# vim: colorscheme jellybeans
+MY_VAR="hello there"
+
+if [[ -d /tmp ]]; then
+    echo "${MY_VAR} there"
+fi

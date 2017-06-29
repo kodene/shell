@@ -7,7 +7,7 @@ export PAGER="less -R"
 export OS=$( uname -o )
 
 if [[ $TERM != screen* ]]; then
-    export TERM=gnome-256color
+    export TERM=xterm-256color
 fi
 
 ### Add color to man pages
@@ -24,6 +24,8 @@ export MANPATH="$( man --path ):$HOME/man"
 
 ### Update PATH
 export PATH=$PATH:$HOME/bin
+
+umask 027
 
 ################################################################################
 ### vim: ft=sh :

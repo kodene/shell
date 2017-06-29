@@ -1,0 +1,101 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+ENABLE_DESKTOP = false
+HEADLESS = true
+
+VM_NAME = "stepdev"
+PUBLIC_ADDRESS = "10.1.1.30"
+HOST_ALIASES = ["wiki.stepdev.test", "forum.stepdev.test"]
+
+# rdp settings
+RDP_ENABLE = "off" # set to either "on" or "off"
+RDP_PORT = 3390 # default port conflicts with Windows host
+
+# Virtual CPU and MEMORY
+VM_CPU = ENV['VM_CPU'] || 2
+VM_MEMORY = ENV['VM_MEMORY'] || 3072
+
+# Required plugins
+REQUIRED_PLUGINS = %w(vagrant-hostmanager vagrant-vbguest)
+
+missing_plugins = REQUIRED_PLUGINS.select { |plugin| not Vagrant.has_plugin? plugin }
+unless missing_plugins.empty?
+    msg = "The following plugins are missing: #{missing_plugins}"
+    fail Vagrant::Errors::VagrantError.new, msg
+end
+
+
+Vagrant.configure(2) do |config|
+    config.vm.box = "step-base"
+    config.vm.hostname = "stepdev.test"
+    config.ssh.private_key_path = "ssh/vagrant_id_rsa"
+    config.vbguest.no_remote = true # do not download guest additions
+
+    config.vm.provider :virtualbox do |v, override|
+        v.memory = VM_MEMORY
+        v.cpus   = VM_CPU
+        if HEADLESS
+            v.gui = false
+        else
+            v.gui = true
+        end
+        v.customize [
+            "modifyvm", :id,
+            '--paravirtprovider', 'kvm',
+            "--name", VM_NAME,
+            "--ioapic", "on",
+            "--natdnshostresolver1", "on",
+            "--vrde", RDP_ENABLE,
+            "--vrdeport", RDP_PORT,
+            "--groups", "/STEP"
+        ]
+        if ENABLE_DESKTOP
+            v.customize [
+                "modifyvm", :id,
+                "--accelerate3d", "on",
+                "--vram", "256"
+            ]
+        end
+    end
+
+    config.vm.network "private_network", ip: "#{PUBLIC_ADDRESS}"
+    config.vm.synced_folder "vagrant", "/vagrant"
+
+    # hostmanager
+    config.hostmanager.enabled = true
+    config.hostmanager.manage_host = true
+    config.hostmanager.ignore_private_ip = false
+    config.hostmanager.aliases = HOST_ALIASES
+
+    config.vm.provision "docker", type: "shell",
+        inline: <<-SHELL
+            yum makecache fast
+            yum update -y
+            yum install epel-release python-devel docker -y
+            yum install python2-pip -y
+            yum clean all
+            systemctl enable docker.service
+            systemctl start docker.service
+#            pip install --upgrade pip
+#            pip install docker-compose
+        SHELL
+
+    config.vm.provision "desktop", type: "shell",
+        env: { 'ENABLE_DESKTOP' => ENABLE_DESKTOP },
+        run: "always",
+        inline: <<-SHELL
+            if [[ ${ENABLE_DESKTOP} == "true" ]]; then
+                systemctl set-default graphical.target
+                echo
+                echo "Desktop has been enabled."
+                echo
+                echo "Restart the VM for the change to take effect."
+                echo
+                echo "   vagrant reload"
+                echo
+            else
+                systemctl set-default multi-user.target
+            fi
+        SHELL
+end
+

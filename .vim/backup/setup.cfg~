@@ -1,0 +1,21 @@
+### 389 Directory Services configuration
+DS_SUFFIX="dc=lab,dc=af,dc=mil"
+
+DS_ROOT_DN_PASS="I8mfiner"
+
+### PKI CA
+PKI_CA_ADMIN_PASS="I8mfiner"
+
+PKI_SECURITY_DOMAIN="ATOMS Security Domain"
+
+### OpenSSL configuration
+countryName="US"
+
+stateOrProvinceName="CO"
+
+localityName="Colorado Springs"
+
+organizationName="Lockheed Martin"
+
+organizationalUnitName="ATOMS"
+

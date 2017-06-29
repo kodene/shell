@@ -5,9 +5,20 @@ if filereadable(expand("~/.vimrc.plugins"))
 endif
 
 " General Settings {{{
-    set t_Co=256
+    syntax enable
+    if has("termguicolors")
+        " set t_8f=[38;2;%lu;%lu;%lum
+        " set t_8b=[48;2;%lu;%lu;%lum
+        set termguicolors
+    else
+        set t_Co=256
+    endif
+    set background=dark
+    colorscheme two-firewatch
+
+    set t_ut=
+
     set history=1000
-    syntax on
     let python_highlight_all=1
 
     let mapleader=","
@@ -58,7 +69,7 @@ endif
     set cursorcolumn
     set colorcolumn=80,120
     set showcmd   " Show partial commands at bottom
-    set showmode  " Display current mode (enables for vi)
+    set noshowmode  " Display current mode (enables for vi)
     set backspace=indent,eol,start
 
     set ruler
@@ -97,18 +108,19 @@ endif
     if has('folding')
         set foldenable
         set foldmethod=indent
-        set foldlevel=99
         let g:SimplyFold_docstring_preview=1
         nnoremap <space> za
     endif
 
     " Perl support
     autocmd BufRead,BufNewFile *.t set filetype=perl
+    " Disable auto comment insertion on next line
+    autocmd FileType * setlocal formatoptions-=cro
 " }}}
 
 " Mappings {{{
     map <space> /
-    " Move amoung wrapped lines
+    " Move among wrapped lines
     map j gj
     map k gk
     " Make Q useful. Copy lines to end of previous or next line (Qj or Qk)
@@ -145,40 +157,40 @@ endif
 " Restore Support {{{
 " http://vim.wikia.com/wiki/Restore_cursor_to_file_position_in_previous_editing_session
 " Restore cursor position, with support for fold level restore
-function! ResCur()
-    if line("'\"") <= line("$")
-        normal! g`"
-        return 1
-    endif
-endfunction
-
-augroup resCur
-    autocmd!
-    if has("folding")
-        autocmd BufWinEnter * if ResCur() | call UnfoldCur() | endif
-    else
-        autocmd BufWinEnter * call ResCur()
-    endif
-augroup END
-
-if has("folding")
-    function! UnfoldCur()
-        if !&foldenable
-            return
-        endif
-        let cl = line(".")
-        if cl <= 1
-            return
-        endif
-        let cf = foldlevel(cl)
-        let uf = foldlevel(cl - 1)
-        let min = (cf > uf ? uf : cf)
-        if min
-            execute "normal!" min . "zo"
-            return 1
-        endif
-    endfunction
-endif
+" function! ResCur()
+"     if line("'\"") <= line("$")
+"         normal! g`"
+"         return 1
+"     endif
+" endfunction
+"
+" augroup resCur
+"     autocmd!
+"     if has("folding")
+"         autocmd BufWinEnter * if ResCur() | call UnfoldCur() | endif
+"     else
+"         autocmd BufWinEnter * call ResCur()
+"     endif
+" augroup END
+"
+" if has("folding")
+"     function! UnfoldCur()
+"         if !&foldenable
+"             return
+"         endif
+"         let cl = line(".")
+"         if cl <= 1
+"             return
+"         endif
+"         let cf = foldlevel(cl)
+"         let uf = foldlevel(cl - 1)
+"         let min = (cf > uf ? uf : cf)
+"         if min
+"             execute "normal!" min . "zo"
+"             return 1
+"         endif
+"     endfunction
+" endif
 " }}}
 
 " Additional Functionality {{{
@@ -195,8 +207,5 @@ endif
     " }}}
 " }}}
 
-set background=dark
-colorscheme jellybeans
-let g:lightline.colorscheme='jellybeans'
 
 " vim: fdm=marker
